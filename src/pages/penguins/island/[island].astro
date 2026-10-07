@@ -1,0 +1,44 @@
+---
+import * as Plot from "@observablehq/plot";
+import Layout from "../../../layouts/Layout.astro";
+import PlotFigure from "../../../components/PlotFigure.astro";
+import { validPenguins } from "../../../lib/penguins.js";
+
+// Pre-rendu au build : une page par ile, generee par getStaticPaths
+export const prerender = true;
+
+export function getStaticPaths() {
+  const islands = [...new Set(validPenguins.map((p) => p.island))];
+  return islands.map((island) => ({ params: { island } }));
+}
+
+const { island } = Astro.params;
+
+const data = validPenguins.filter((p) => p.island === island);
+
+const plot = {
+  ariaLabel: `Nuage de points de la profondeur du bec en fonction de sa longueur pour les manchots de l'ile ${island}`,
+  grid: true,
+  // Domaine fixe : chaque espece garde sa couleur d'une ile a l'autre
+  color: { legend: true, domain: [...new Set(validPenguins.map((p) => p.species))] },
+  x: { label: "Longueur du bec (mm)" },
+  y: { label: "Profondeur du bec (mm)" },
+  marks: [
+    Plot.dot(data, {
+      x: "culmen_length_mm",
+      y: "culmen_depth_mm",
+      stroke: "species",
+      tip: true,
+    }),
+  ],
+};
+---
+
+<Layout title={island}>
+  <p class="m-0 mb-4"><a href="/penguins/island/" class="text-sm text-slate-600">← Toutes les iles</a></p>
+  <h1 class="mb-6 mt-0 text-3xl font-bold">Ile : {island}</h1>
+
+  <div class="[&_svg]:block [&_svg]:h-auto [&_svg]:max-w-full [&_svg]:font-sans">
+    <PlotFigure options={plot} />
+  </div>
+</Layout>

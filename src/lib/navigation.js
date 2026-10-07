@@ -27,6 +27,15 @@ export const navGroups = [
           { href: "/plot/penguin-filtres/", label: "Penguin avec plusieurs filtres" },
         ],
       },
+      {
+        title: "Routes parametriques (TP6)",
+        links: [
+          { href: "/penguins/slider/", label: "Slider" },
+          { href: "/penguins/specie/", label: "Par espece" },
+          { href: "/penguins/island/", label: "Par ile" },
+          { href: "/penguins/sex/", label: "Par sexe" },
+        ],
+      },
     ],
   },
   {

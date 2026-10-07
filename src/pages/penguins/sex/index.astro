@@ -1,0 +1,26 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import { validPenguins } from "../../../lib/penguins.js";
+
+// Liste des sexes determinee automatiquement a partir des donnees (sans les manchots au sexe inconnu)
+const sexes = [...new Set(validPenguins.map((p) => p.sex))].filter((sex) => sex != null);
+---
+
+<Layout title="Sexes" description="Liens vers la page de chaque sexe.">
+  <h1 class="mb-6 mt-0 text-3xl font-bold">Les sexes</h1>
+
+  <ul class="m-0 flex list-none flex-wrap gap-2 p-0">
+    {
+      sexes.map((sex) => (
+        <li>
+          <a
+            href={`/penguins/sex/${sex}/`}
+            class="block border border-slate-300 px-4 py-2 text-slate-700 no-underline hover:border-slate-900 hover:text-slate-900"
+          >
+            {sex}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</Layout>

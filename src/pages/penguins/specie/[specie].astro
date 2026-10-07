@@ -1,0 +1,22 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import GraphicSpecies from "../../../components/GraphicSpecies.astro";
+import { validPenguins } from "../../../lib/penguins.js";
+
+// Pre-rendu au build : une page par espece, generee par getStaticPaths
+export const prerender = true;
+
+export function getStaticPaths() {
+  const species = [...new Set(validPenguins.map((p) => p.species))];
+  return species.map((specie) => ({ params: { specie } }));
+}
+
+const { specie } = Astro.params;
+---
+
+<Layout title={specie}>
+  <p class="m-0 mb-4"><a href="/penguins/specie/" class="text-sm text-slate-600">← Toutes les especes</a></p>
+  <h1 class="mb-6 mt-0 text-3xl font-bold">Espece : {specie}</h1>
+
+  <GraphicSpecies species={specie} />
+</Layout>

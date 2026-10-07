@@ -1,0 +1,26 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import { validPenguins } from "../../../lib/penguins.js";
+
+// Liste des iles determinee automatiquement a partir des donnees
+const islands = [...new Set(validPenguins.map((p) => p.island))];
+---
+
+<Layout title="Iles" description="Liens vers la page de chaque ile.">
+  <h1 class="mb-6 mt-0 text-3xl font-bold">Les iles</h1>
+
+  <ul class="m-0 flex list-none flex-wrap gap-2 p-0">
+    {
+      islands.map((island) => (
+        <li>
+          <a
+            href={`/penguins/island/${island}/`}
+            class="block border border-slate-300 px-4 py-2 text-slate-700 no-underline hover:border-slate-900 hover:text-slate-900"
+          >
+            {island}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</Layout>

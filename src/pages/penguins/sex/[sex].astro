@@ -1,0 +1,45 @@
+---
+import * as Plot from "@observablehq/plot";
+import Layout from "../../../layouts/Layout.astro";
+import PlotFigure from "../../../components/PlotFigure.astro";
+import { validPenguins } from "../../../lib/penguins.js";
+
+// Pre-rendu au build : une page par sexe, generee par getStaticPaths
+export const prerender = true;
+
+export function getStaticPaths() {
+  // Les manchots au sexe inconnu (null) n'ont pas de page
+  const sexes = [...new Set(validPenguins.map((p) => p.sex))].filter((sex) => sex != null);
+  return sexes.map((sex) => ({ params: { sex } }));
+}
+
+const { sex } = Astro.params;
+
+const data = validPenguins.filter((p) => p.sex === sex);
+
+const plot = {
+  ariaLabel: `Nuage de points de la profondeur du bec en fonction de sa longueur pour les manchots de sexe ${sex}`,
+  grid: true,
+  // Domaine fixe : chaque espece garde sa couleur d'une page a l'autre
+  color: { legend: true, domain: [...new Set(validPenguins.map((p) => p.species))] },
+  x: { label: "Longueur du bec (mm)" },
+  y: { label: "Profondeur du bec (mm)" },
+  marks: [
+    Plot.dot(data, {
+      x: "culmen_length_mm",
+      y: "culmen_depth_mm",
+      stroke: "species",
+      tip: true,
+    }),
+  ],
+};
+---
+
+<Layout title={sex}>
+  <p class="m-0 mb-4"><a href="/penguins/sex/" class="text-sm text-slate-600">← Tous les sexes</a></p>
+  <h1 class="mb-6 mt-0 text-3xl font-bold">Sexe : {sex}</h1>
+
+  <div class="[&_svg]:block [&_svg]:h-auto [&_svg]:max-w-full [&_svg]:font-sans">
+    <PlotFigure options={plot} />
+  </div>
+</Layout>

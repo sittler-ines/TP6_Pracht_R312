@@ -1,0 +1,29 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import GraphicSpecies from "../../components/GraphicSpecies.astro";
+import { validPenguins } from "../../lib/penguins.js";
+
+// Liste des especes determinee automatiquement a partir des donnees
+const species = [...new Set(validPenguins.map((p) => p.species))];
+---
+
+<Layout title="Slider des especes" description="Les graphiques de toutes les especes de manchots dans un slider.">
+  <header class="mb-6">
+    <p class="m-0 text-sm uppercase tracking-wide text-slate-500">Une page avec slider</p>
+    <h1 class="mb-0 mt-1 text-3xl font-bold">Graphiques de toutes les especes</h1>
+  </header>
+
+  <div
+    class="flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth pb-4"
+    tabindex="0"
+    aria-label="Slider des graphiques par espece"
+  >
+    {
+      species.map((specie) => (
+        <section class="w-full shrink-0 snap-start" aria-label={`Graphique ${specie}`}>
+          <GraphicSpecies species={specie} />
+        </section>
+      ))
+    }
+  </div>
+</Layout>
