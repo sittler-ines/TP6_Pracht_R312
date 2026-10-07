@@ -1,0 +1,49 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { speciesList, speciesInfos } from "../lib/penguins.js";
+---
+
+<Layout
+  title="Iframe"
+  description="Les pages especes affichees dans une iframe, choisie avec une liste deroulante."
+>
+  <header class="mb-6">
+    <p class="m-0 text-sm uppercase tracking-wide text-slate-500">Une page avec iframe</p>
+    <h1 class="mb-0 mt-1 text-3xl font-bold">Mesures du bec par espece</h1>
+  </header>
+
+  <div class="mb-6 flex flex-wrap items-center gap-3">
+    <label for="species" class="text-sm font-semibold">Espece :</label>
+    <select
+      id="species"
+      class="border border-slate-300 bg-white px-3 py-2 text-sm focus:border-slate-900 focus:outline-none"
+    >
+      {
+        speciesList.map((species) => (
+          <option value={species}>
+            {species} ({speciesInfos[species].name})
+          </option>
+        ))
+      }
+    </select>
+  </div>
+
+  <iframe
+    id="species-frame"
+    src="/species/Adelie/"
+    title="Page de l'espece choisie"
+    class="block h-[60rem] w-full border border-slate-200"
+  ></iframe>
+</Layout>
+
+<script>
+  const frame = document.querySelector("#species-frame") as HTMLIFrameElement | null;
+
+  // Choix dans le select : on change la source de l'iframe, pas l'URL de la page
+  document.querySelector("#species")?.addEventListener("change", (evt) => {
+    const value = (evt.target as HTMLSelectElement).value;
+    if (frame) {
+      frame.src = "/species/" + value + "/";
+    }
+  });
+</script>

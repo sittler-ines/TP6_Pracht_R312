@@ -1,26 +1,39 @@
 ---
 import "../styles/global.css";
+import Nav from "../components/Nav.astro";
+import SubNav from "../components/SubNav.astro";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const {
+  title,
+  description = "Visualisations de jeux de donnees (manchots, voitures, athletes) avec Astro et Observable Plot.",
+} = Astro.props;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="fr">
   <head>
-    <meta charset="UTF-8" />
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
-    <title>Astro Basics</title>
+    <meta name="description" content={description} />
+    <title>{title} | TP R312</title>
   </head>
-  <body>
-    <slot />
+  <body class="m-0 flex min-h-screen flex-col bg-white font-sans text-slate-900">
+    <Nav />
+    <SubNav />
+    <main class="mx-auto w-full max-w-5xl flex-1 px-5 py-10 sm:px-8">
+      <slot />
+    </main>
+    <footer class="border-t border-slate-200">
+      <p class="mx-auto max-w-5xl px-5 py-6 text-sm text-slate-500 sm:px-8">
+        Donnees : Palmer Penguins, cars et olympians (sample datasets Observable).
+      </p>
+    </footer>
   </body>
 </html>
-
-<style>
-  html,
-  body {
-    margin: 0;
-    width: 100%;
-    height: 100%;
-  }
-</style>

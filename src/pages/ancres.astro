@@ -1,0 +1,99 @@
+---
+import Layout from "../layouts/Layout.astro";
+import GraphicSpecies from "../components/GraphicSpecies.astro";
+import { speciesList, speciesInfos } from "../lib/penguins.js";
+
+// L'ancre est l'espece en minuscules : #adelie, #gentoo, #chinstrap
+const anchorId = (/** @type {string} */ species) => species.toLowerCase();
+---
+
+<Layout
+  title="Toutes les especes"
+  description="Les trois especes de manchots dans un slider horizontal, avec une liste a ancres."
+>
+  <header class="mb-6">
+    <p class="m-0 text-sm uppercase tracking-wide text-slate-500">Une page a ancres</p>
+    <h1 class="mb-0 mt-1 text-3xl font-bold">Mesures du bec des trois especes</h1>
+  </header>
+
+  <nav
+    aria-label="Navigation entre les especes"
+    class="sticky top-0 z-10 -mx-5 mb-6 border-b border-slate-200 bg-white/95 px-5 py-3 backdrop-blur sm:-mx-8 sm:px-8"
+  >
+    <div class="flex flex-wrap items-center gap-3">
+      <label for="species" class="text-sm font-semibold">Espece :</label>
+      <select
+        id="species"
+        class="border border-slate-300 bg-white px-3 py-2 text-sm focus:border-slate-900 focus:outline-none"
+      >
+        {
+          speciesList.map((species) => (
+            <option value={anchorId(species)}>
+              {species} ({speciesInfos[species].name})
+            </option>
+          ))
+        }
+      </select>
+    </div>
+  </nav>
+
+  <!-- Le slider : un conteneur qui defile horizontalement, une "slide" par espece. -->
+  <div
+    id="slider"
+    class="flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth pb-4"
+    tabindex="0"
+    aria-label="Slider des graphiques par espece"
+  >
+    {
+      speciesList.map((species) => (
+        <section
+          id={anchorId(species)}
+          class="item w-full shrink-0 snap-start scroll-mt-24"
+          aria-label={`Graphique ${species}`}
+        >
+          <GraphicSpecies species={species} />
+        </section>
+      ))
+    }
+  </div>
+
+  <p class="mt-4 text-sm text-slate-500">
+    Astuce : on peut aussi faire glisser le slider a la souris ou au doigt, la liste suit.
+  </p>
+</Layout>
+
+<script>
+  const select = document.querySelector("#species") as HTMLSelectElement | null;
+  const items = document.querySelectorAll(".item");
+  const slider = document.querySelector("#slider");
+
+  // Choix dans le select : on change l'ancre, le navigateur fait defiler le slider
+  select?.addEventListener("change", (evt) => {
+    const value = (evt.target as HTMLSelectElement).value;
+    location.hash = value;
+  });
+
+  // Si on arrive sur la page avec une ancre (ex. /ancres/#gentoo), le select la reprend
+  if (select && location.hash) {
+    select.value = location.hash.slice(1);
+  }
+
+  // Quand une slide est visible (glisser a la souris ou au doigt), le select suit
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        // On teste le taux de recouvrement plutot que "entry.isIntersecting" :
+        // isIntersecting reste vrai des qu'un pixel de la slide est visible.
+        if (select && entry.intersectionRatio >= 0.5) {
+          select.value = entry.target.getAttribute("id") ?? "";
+        }
+      });
+    },
+    // "root: slider" : on observe la zone visible DU SLIDER, pas celle de la page.
+    { root: slider, threshold: 0.5 },
+  );
+
+  items.forEach((item) => {
+    observer.observe(item);
+  });
+</script>

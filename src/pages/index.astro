@@ -1,21 +1,96 @@
 ---
-import PlotFigure from "../components/PlotFigure.astro";
-import Layout from "../layouts/Layout.astro";
 import * as Plot from "@observablehq/plot";
-import penguins from "../assets/penguins.json";
+import Layout from "../layouts/Layout.astro";
+import PlotFigure from "../components/PlotFigure.astro";
+import { validPenguins } from "../lib/penguins.js";
+
+const dotPlot = {
+  ariaLabel: "Nuage de points de la masse corporelle des manchots en fonction de la longueur de leur nageoire, colore par espece",
+  caption: "Plus la nageoire est longue, plus le manchot est lourd. Les Gentoo forment un groupe a part.",
+  grid: true,
+  color: { legend: true },
+  x: { label: "Longueur de la nageoire (mm)" },
+  y: { label: "Masse corporelle (g)" },
+  marks: [
+    Plot.dot(validPenguins, {
+      x: "flipper_length_mm",
+      y: "body_mass_g",
+      fill: "species",
+      r: 5,
+      tip: true,
+    }),
+  ],
+};
+
+const speciesPlot = {
+  ariaLabel: "Diagramme en barres du nombre de manchots par espece",
+  caption: "Les Adelie sont les plus nombreux, les Chinstrap les moins nombreux.",
+  color: { legend: true },
+  x: { label: "Nombre de manchots" },
+  y: { label: null },
+  marks: [
+    Plot.barX(validPenguins, Plot.groupY({ x: "count" }, { y: "species", fill: "species" })),
+    Plot.text(validPenguins, Plot.groupY({ text: "count" }, { y: "species", x: "count", dx: 12 })),
+  ],
+};
+
+const culmenPlot = {
+  ariaLabel: "Nuage de points de la profondeur du bec en fonction de sa longueur, couleur par espece et forme par sexe",
+  caption: "Chaque espece forme son propre groupe : bec court et epais pour les Adelie, long et fin pour les Gentoo, long et epais pour les Chinstrap.",
+  grid: true,
+  color: { legend: true },
+  symbol: { legend: true, label: "Sexe" },
+  x: { label: "Longueur du bec (mm)" },
+  y: { label: "Profondeur du bec (mm)" },
+  marks: [
+    Plot.dot(validPenguins, {
+      x: "culmen_length_mm",
+      y: "culmen_depth_mm",
+      stroke: "species",
+      symbol: "sex",
+      r: 4.5,
+      tip: true,
+    }),
+  ],
+};
+
 ---
 
-<Layout>
-  <h1 class="text-2xl">Test Astro et Plot (Observablehq)</h1>
-  <PlotFigure
-    options={{
-      marks: [
-        Plot.dot(penguins, {
-          x: "culmen_length_mm",
-          y: "culmen_depth_mm",
-          stroke: "species",
-        }),
-      ],
-    }}
-  />
+<Layout title="Accueil">
+  <header class="mb-9">
+    <h1 class="mb-2 text-3xl font-bold">Les manchots</h1>
+    <p class="m-0 leading-6 text-slate-600">
+      Visualisations du jeu de donnees Palmer Penguins avec Observable Plot.
+    </p>
+  </header>
+
+  <section class="grid gap-6" aria-label="Visualisations d'ensemble">
+    <h2 class="m-0 text-xl font-semibold">Vue d'ensemble</h2>
+
+    <article class="overflow-x-auto border border-slate-200 p-4 sm:p-6">
+      <h3 class="m-0 text-lg font-semibold">Nageoires et masse</h3>
+      <p class="mb-5 mt-1 text-slate-600">Chaque point represente un manchot.</p>
+      <div class="[&_svg]:block [&_svg]:h-auto [&_svg]:max-w-full [&_svg]:font-sans">
+        <PlotFigure options={dotPlot} />
+      </div>
+    </article>
+
+    <article class="overflow-x-auto border border-slate-200 p-4 sm:p-6">
+      <h3 class="m-0 text-lg font-semibold">Repartition des especes</h3>
+      <p class="mb-5 mt-1 text-slate-600">Un exemple de diagramme en barres.</p>
+      <div class="[&_svg]:block [&_svg]:h-auto [&_svg]:max-w-full [&_svg]:font-sans">
+        <PlotFigure options={speciesPlot} />
+      </div>
+    </article>
+
+    <article class="overflow-x-auto border border-slate-200 p-4 sm:p-6">
+      <h3 class="m-0 text-lg font-semibold">Mesures du bec</h3>
+      <p class="mb-5 mt-1 text-slate-600">
+        La forme indique le sexe et la couleur indique l'espece.
+      </p>
+      <div class="[&_svg]:block [&_svg]:h-auto [&_svg]:max-w-full [&_svg]:font-sans">
+        <PlotFigure options={culmenPlot} />
+      </div>
+    </article>
+  </section>
 </Layout>

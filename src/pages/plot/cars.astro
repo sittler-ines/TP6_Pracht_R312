@@ -1,0 +1,92 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import cars from "../../assets/cars.json";
+
+// Options des select calculees a partir des donnees (cote serveur, au build)
+const cylindersList = [...new Set(cars.map((d) => d.cylinders))].sort((a, b) => a - b);
+const yearsList = [...new Set(cars.map((d) => d.year))].sort((a, b) => a - b);
+
+const selectClass =
+  "border border-slate-300 bg-white px-3 py-2 text-sm focus:border-slate-900 focus:outline-none";
+---
+
+<Layout
+  title="Voitures"
+  description="Puissance et consommation de 406 voitures (1970-1982), filtrees par cylindres et annee cote client."
+>
+  <h1 class="mb-2 mt-0 text-3xl font-bold">Voitures : puissance et consommation</h1>
+  <p class="mb-6 mt-0 text-slate-600">
+    Jeu de donnees "cars" des sample datasets Observable : 406 modeles de 1970 a 1982.
+  </p>
+
+  <form id="filters" class="mb-6 flex flex-wrap items-center gap-x-6 gap-y-3">
+    <div class="flex items-center gap-2">
+      <label for="cylinders" class="text-sm font-semibold">Cylindres :</label>
+      <select name="cylinders" id="cylinders" class={selectClass}>
+        <option value="">Tous</option>
+        {cylindersList.map((c) => <option value={c}>{c} cylindres</option>)}
+      </select>
+    </div>
+    <div class="flex items-center gap-2">
+      <label for="year" class="text-sm font-semibold">Annee :</label>
+      <select name="year" id="year" class={selectClass}>
+        <option value="">Toutes</option>
+        {yearsList.map((y) => <option value={y}>{y}</option>)}
+      </select>
+    </div>
+  </form>
+
+  <p id="count" class="mb-4 mt-0 text-sm text-slate-600" aria-live="polite"></p>
+  <div id="myplot"></div>
+</Layout>
+
+<script>
+  import * as Plot from "@observablehq/plot";
+  import cars from "../../assets/cars.json";
+
+  const selectCylinders = document.querySelector("#cylinders") as HTMLSelectElement;
+  const selectYear = document.querySelector("#year") as HTMLSelectElement;
+
+  function renderPlot() {
+    // La valeur d'un select est toujours une chaine : on compare avec String()
+    const cylinders = selectCylinders.value;
+    const year = selectYear.value;
+
+    const data = cars.filter(
+      (d) =>
+        (cylinders === "" || String(d.cylinders) === cylinders) &&
+        (year === "" || String(d.year) === year),
+    );
+
+    const count = document.querySelector("#count") as HTMLParagraphElement;
+    count.innerText = `${data.length} voiture(s) correspondant aux filtres.`;
+
+    const div = document.querySelector("#myplot") as HTMLDivElement;
+    div.innerHTML = "";
+    if (data.length === 0) {
+      div.innerText = "Aucune voiture ne correspond a ces filtres.";
+      return;
+    }
+
+    const plot = Plot.plot({
+      grid: true,
+      // Domaines fixes : les axes et les couleurs ne bougent pas quand on filtre
+      x: { label: "Puissance (ch)", domain: [40, 240] },
+      y: { label: "Consommation (miles par gallon)", domain: [5, 50] },
+      color: { legend: true, type: "ordinal", scheme: "tableau10", domain: [3, 4, 5, 6, 8], label: "Cylindres" },
+      marks: [
+        Plot.dot(data, {
+          x: "power",
+          y: "economy",
+          stroke: "cylinders",
+          tip: true,
+          channels: { Modele: "name", Annee: "year" },
+        }),
+      ],
+    });
+    div.append(plot);
+  }
+
+  document.querySelector("#filters")?.addEventListener("change", renderPlot);
+  renderPlot();
+</script>

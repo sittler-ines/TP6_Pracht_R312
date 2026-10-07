@@ -1,0 +1,69 @@
+---
+import * as Plot from "@observablehq/plot";
+import PlotFigure from "./PlotFigure.astro";
+import { validPenguins, speciesColors, speciesInfos, speciesStats } from "../lib/penguins.js";
+
+interface Props {
+  species: string;
+}
+
+const { species } = Astro.props;
+const infos = speciesInfos[species];
+const stats = speciesStats(species);
+const color = speciesColors[species];
+
+const selected = validPenguins.filter((p) => p.species === species);
+const others = validPenguins.filter((p) => p.species !== species);
+
+// Les autres especes restent en gris clair en fond, pour comparer.
+const plot = {
+  ariaLabel: `Nuage de points de la profondeur du bec en fonction de sa longueur pour les ${species}, les autres especes en gris`,
+  caption: `En couleur : les ${species}, la forme indique le sexe. En gris : les deux autres especes.`,
+  grid: true,
+  symbol: { legend: true, label: "Sexe" },
+  x: { label: "Longueur du bec (mm)" },
+  y: { label: "Profondeur du bec (mm)" },
+  marks: [
+    Plot.dot(others, { x: "culmen_length_mm", y: "culmen_depth_mm", fill: "#cbd5e1", r: 3 }),
+    Plot.dot(selected, {
+      x: "culmen_length_mm",
+      y: "culmen_depth_mm",
+      stroke: color,
+      symbol: "sex",
+      r: 4.5,
+      tip: true,
+    }),
+  ],
+};
+
+const chiffres = [
+  { label: "Individus", value: stats.count },
+  { label: "Masse moyenne", value: `${stats.bodyMass} g` },
+  { label: "Nageoire moyenne", value: `${stats.flipper} mm` },
+  { label: "Iles", value: stats.islands.join(", ") },
+];
+---
+
+<article class="overflow-x-auto border border-slate-200 p-4 sm:p-6">
+  <h2 class="m-0 flex items-center gap-2 text-xl font-semibold">
+    <span class="inline-block size-3 rounded-full" style={`background-color:${color}`} aria-hidden="true"></span>
+    {species} <span class="font-normal text-slate-500">— {infos.name}</span>
+  </h2>
+  <p class="mb-5 mt-1 leading-6 text-slate-600">{infos.text}</p>
+
+  <dl class="m-0 mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+    {
+      chiffres.map((item) => (
+        <div class="bg-slate-50 p-3">
+          <dt class="text-xs uppercase tracking-wide text-slate-500">{item.label}</dt>
+          <dd class="m-0 mt-1 font-semibold">{item.value}</dd>
+        </div>
+      ))
+    }
+  </dl>
+
+  <h3 class="m-0 mb-3 text-base font-semibold">Mesures du bec</h3>
+  <div class="[&_svg]:block [&_svg]:h-auto [&_svg]:max-w-full [&_svg]:font-sans">
+    <PlotFigure options={plot} />
+  </div>
+</article>

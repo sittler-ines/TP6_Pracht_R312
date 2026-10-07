@@ -1,0 +1,102 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+const selectClass =
+  "border border-slate-300 bg-white px-3 py-2 text-sm focus:border-slate-900 focus:outline-none";
+---
+
+<Layout
+  title="Penguin avec plusieurs filtres"
+  description="Mesures du bec des manchots, filtrees par espece, ile et sexe cote client."
+>
+  <h1 class="mb-6 mt-0 text-3xl font-bold">Penguin avec plusieurs filtres</h1>
+
+  <form id="filters" class="mb-6 flex flex-wrap items-center gap-x-6 gap-y-3">
+    <div class="flex items-center gap-2">
+      <label for="species" class="text-sm font-semibold">Espece :</label>
+      <select name="species" id="species" class={selectClass}>
+        <option value="">All species</option>
+        <option value="Adelie">Adelie</option>
+        <option value="Chinstrap">Chinstrap</option>
+        <option value="Gentoo">Gentoo</option>
+      </select>
+    </div>
+    <div class="flex items-center gap-2">
+      <label for="island" class="text-sm font-semibold">Ile :</label>
+      <select name="island" id="island" class={selectClass}>
+        <option value="">All islands</option>
+        <option value="Biscoe">Biscoe</option>
+        <option value="Dream">Dream</option>
+        <option value="Torgersen">Torgersen</option>
+      </select>
+    </div>
+    <div class="flex items-center gap-2">
+      <label for="sex" class="text-sm font-semibold">Sexe :</label>
+      <select name="sex" id="sex" class={selectClass}>
+        <option value="">All sexes</option>
+        <option value="MALE">Male</option>
+        <option value="FEMALE">Female</option>
+      </select>
+    </div>
+  </form>
+
+  <p id="count" class="mb-4 mt-0 text-sm text-slate-600" aria-live="polite"></p>
+  <div id="myplot"></div>
+</Layout>
+
+<script>
+  import * as Plot from "@observablehq/plot";
+  import penguins from "../../assets/penguins.json";
+
+  const selectSpecies = document.querySelector("#species") as HTMLSelectElement;
+  const selectIsland = document.querySelector("#island") as HTMLSelectElement;
+  const selectSex = document.querySelector("#sex") as HTMLSelectElement;
+
+  function renderPlot() {
+    // Lecture des entrees
+    const species = selectSpecies.value;
+    const island = selectIsland.value;
+    const sex = selectSex.value;
+
+    // Calcul : "" dans un select = pas de filtre sur ce critere
+    const data = penguins.filter(
+      (d) =>
+        (species === "" || d.species === species) &&
+        (island === "" || d.island === island) &&
+        (sex === "" || d.sex === sex),
+    );
+
+    // Ecriture dans la page, apres avoir supprime l'affichage precedent
+    const count = document.querySelector("#count") as HTMLParagraphElement;
+    count.innerText = `${data.length} manchot(s) correspondant aux filtres.`;
+
+    const div = document.querySelector("#myplot") as HTMLDivElement;
+    div.innerHTML = "";
+    if (data.length === 0) {
+      div.innerText = "Aucun manchot ne correspond a ces filtres (ex. pas de Gentoo sur Dream).";
+      return;
+    }
+
+    const plot = Plot.plot({
+      grid: true,
+      // Domaine fixe : chaque espece garde sa couleur quel que soit le filtre
+      color: { legend: true, domain: ["Adelie", "Chinstrap", "Gentoo"] },
+      x: { label: "Longueur du bec (mm)" },
+      y: { label: "Profondeur du bec (mm)" },
+      marks: [
+        Plot.dot(data, {
+          x: "culmen_length_mm",
+          y: "culmen_depth_mm",
+          stroke: "species",
+          tip: true,
+        }),
+      ],
+    });
+    div.append(plot);
+  }
+
+  // L'evenement "change" de chaque select remonte jusqu'au formulaire :
+  // un seul ecouteur suffit pour les trois filtres.
+  document.querySelector("#filters")?.addEventListener("change", renderPlot);
+  renderPlot();
+</script>

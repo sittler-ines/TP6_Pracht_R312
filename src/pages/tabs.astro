@@ -1,0 +1,57 @@
+---
+import { Tabs, TabsList, TabsTab, TabsPanel } from "accessible-astro-components";
+import Layout from "../layouts/Layout.astro";
+import GraphicSpecies from "../components/GraphicSpecies.astro";
+import { speciesList, speciesColors, speciesInfos } from "../lib/penguins.js";
+
+// Identifiants en minuscules : tab-adelie / panel-adelie, etc.
+const anchorId = (/** @type {string} */ species) => species.toLowerCase();
+---
+
+<Layout
+  title="Onglets"
+  description="Les trois especes de manchots dans des onglets accessibles (accessible-astro-components)."
+>
+  <header class="mb-6">
+    <p class="m-0 text-sm uppercase tracking-wide text-slate-500">Une page a onglets</p>
+    <h1 class="mb-0 mt-1 text-3xl font-bold">Mesures du bec des trois especes</h1>
+  </header>
+
+  <Tabs>
+    <TabsList aria-label="Choix de l'espece" class="gap-2!">
+      {
+        speciesList.map((species, index) => (
+          <TabsTab
+            id={`tab-${anchorId(species)}`}
+            controls={`panel-${anchorId(species)}`}
+            selected={index === 0}
+            class="flex! items-center justify-center gap-2 border-2! border-slate-300! bg-white! py-5! text-base! font-normal! text-slate-600! hover:bg-slate-50! hover:text-slate-900! aria-selected:border-slate-400! aria-selected:bg-slate-200! aria-selected:text-slate-900!"
+          >
+            <span
+              class="inline-block size-3 rounded-full"
+              style={`background-color:${speciesColors[species]}`}
+              aria-hidden="true"
+            />
+            <span>
+              {species}
+              <span class="ml-1 opacity-70">({speciesInfos[species].name})</span>
+            </span>
+          </TabsTab>
+        ))
+      }
+    </TabsList>
+
+    {
+      speciesList.map((species, index) => (
+        <TabsPanel
+          id={`panel-${anchorId(species)}`}
+          labelledby={`tab-${anchorId(species)}`}
+          selected={index === 0}
+          class="min-h-0! items-stretch! border-2! border-slate-300! p-0! [&>article]:border-0!"
+        >
+          <GraphicSpecies species={species} />
+        </TabsPanel>
+      ))
+    }
+  </Tabs>
+</Layout>

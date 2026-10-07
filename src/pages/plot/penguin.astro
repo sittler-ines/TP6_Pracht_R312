@@ -1,0 +1,27 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout title="Simple Penguin" description="Mesures du bec des manchots, graphique construit cote client.">
+  <h1 class="mb-6 mt-0 text-3xl font-bold">Simple Penguin : mesures du bec</h1>
+
+  <div id="myplot"></div>
+</Layout>
+
+<script>
+  import * as Plot from "@observablehq/plot";
+  // Le JSON est importe comme un module : il est integre au script envoye au navigateur
+  import penguins from "../../assets/penguins.json";
+
+  const plot = Plot.plot({
+    marks: [
+      Plot.dot(penguins, {
+        x: "culmen_length_mm",
+        y: "culmen_depth_mm",
+        stroke: "species",
+      }),
+    ],
+  });
+  const div = document.querySelector("#myplot");
+  div?.append(plot);
+</script>

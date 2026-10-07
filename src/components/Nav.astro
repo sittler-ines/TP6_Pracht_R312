@@ -1,0 +1,97 @@
+---
+import { navGroups, groupLinks, isActive, currentPath } from "../lib/navigation.js";
+
+const path = currentPath(Astro.url);
+
+const itemClass =
+  "block px-3 py-2 text-sm text-slate-600 no-underline transition-colors hover:bg-slate-100 hover:text-slate-900 aria-[current=page]:bg-slate-900 aria-[current=page]:text-white";
+---
+
+<header class="border-b border-slate-200">
+  <nav
+    aria-label="Navigation principale"
+    class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-5 py-4 sm:px-8"
+  >
+    <a href="/" class="text-lg font-bold text-slate-900 no-underline">TP R312</a>
+    <ul class="m-0 flex list-none flex-wrap gap-1 p-0">
+      {
+        navGroups.map((group) => {
+          const links = groupLinks(group);
+          const active = links.some((link) => isActive(link, path));
+
+          // Un groupe d'une seule page : simple lien
+          if (links.length === 1) {
+            return (
+              <li>
+                <a href={links[0].href} aria-current={active ? "page" : undefined} class={itemClass}>
+                  {group.label}
+                </a>
+              </li>
+            );
+          }
+
+          // Plusieurs pages : menu deroulant (details/summary, utilisable sans JS)
+          return (
+            <li class="relative">
+              <details class="nav-menu group">
+                <summary
+                  aria-current={active ? "page" : undefined}
+                  class={`${itemClass} flex cursor-pointer list-none items-center gap-1 [&::-webkit-details-marker]:hidden`}
+                >
+                  {group.label}
+                  <span class="text-xs transition-transform group-open:rotate-180" aria-hidden="true">
+                    ▾
+                  </span>
+                </summary>
+                <div class="absolute left-0 z-20 mt-1 w-60 border border-slate-200 bg-white p-2 shadow-lg">
+                  {group.sections.map((section) => (
+                    <div class="py-1">
+                      <p class="m-0 px-3 py-1 text-xs uppercase tracking-wide text-slate-400">
+                        {section.title}
+                      </p>
+                      <ul class="m-0 list-none p-0">
+                        {section.links.map((link) => (
+                          <li>
+                            <a
+                              href={link.href}
+                              aria-current={isActive(link, path) ? "page" : undefined}
+                              class={itemClass}
+                            >
+                              {link.label}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </details>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </nav>
+</header>
+
+<script>
+  const menus = document.querySelectorAll<HTMLDetailsElement>(".nav-menu");
+
+  // Ferme les menus ouverts au clic en dehors
+  document.addEventListener("click", (evt) => {
+    menus.forEach((menu) => {
+      if (!menu.contains(evt.target as Node)) menu.open = false;
+    });
+  });
+
+  // Echap ferme le menu et rend le focus a son bouton
+  document.addEventListener("keydown", (evt) => {
+    if (evt.key !== "Escape") return;
+    menus.forEach((menu) => {
+      if (menu.open) {
+        menu.open = false;
+        menu.querySelector("summary")?.focus();
+      }
+    });
+  });
+</script>

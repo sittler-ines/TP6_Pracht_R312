@@ -1,0 +1,60 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout title="Penguin avec filtre" description="Mesures du bec des manchots, filtrees par espece cote client.">
+  <h1 class="mb-6 mt-0 text-3xl font-bold">Penguin avec filtre</h1>
+
+  <div class="mb-6 flex flex-wrap items-center gap-3">
+    <label for="species" class="text-sm font-semibold">Espece :</label>
+    <select
+      name="species"
+      id="species"
+      class="border border-slate-300 bg-white px-3 py-2 text-sm focus:border-slate-900 focus:outline-none"
+    >
+      <option value="">All species</option>
+      <option value="Adelie">Adelie</option>
+      <option value="Chinstrap">Chinstrap</option>
+      <option value="Gentoo">Gentoo</option>
+    </select>
+  </div>
+
+  <div id="myplot"></div>
+</Layout>
+
+<script>
+  // Importe la librairie Plot d'ObservableHQ
+  import * as Plot from "@observablehq/plot";
+  // Importe les donnees des manchots depuis un fichier JSON
+  import penguins from "../../assets/penguins.json";
+  // Recupere l'element select pour choisir l'espece
+  const selectSpecies = document.querySelector("#species") as HTMLSelectElement;
+  // Fonction pour afficher le graphique
+  function renderPlot() {
+    // Recupere l'espece selectionnee
+    const species = selectSpecies.value;
+    // Selectionne la div ou le graphique sera affiche
+    const div = document.querySelector("#myplot") as HTMLDivElement;
+    // Vide le contenu precedent de la div
+    div.innerHTML = "";
+    // Cree le graphique avec Plot
+    const plot = Plot.plot({
+      marks: [
+        // Ajoute les points du graphique, filtres selon l'espece choisie
+        Plot.dot(penguins, {
+          x: "culmen_length_mm", // Axe X : longueur du bec
+          y: "culmen_depth_mm", // Axe Y : profondeur du bec
+          stroke: "species", // Couleur selon l'espece
+          // Filtre selon l'espece selectionnee ("" = toutes les especes)
+          filter: (d) => species === "" || d.species === species,
+        }),
+      ],
+    });
+    // Ajoute le graphique a la div
+    div.append(plot);
+  }
+  // Ajoute un ecouteur d'evenement pour le changement d'espece (appel 'renderPlot')
+  selectSpecies.addEventListener("change", renderPlot);
+  // Affiche le graphique au chargement de la page
+  renderPlot();
+</script>

@@ -1,0 +1,33 @@
+---
+import { speciesList, speciesInfos } from "../lib/penguins.js";
+
+interface Props {
+  current: string;
+}
+
+const { current } = Astro.props;
+---
+
+<div class="mb-6 flex flex-wrap items-center gap-3">
+  <label for="species" class="text-sm font-semibold">Espece :</label>
+  <select
+    id="species"
+    class="border border-slate-300 bg-white px-3 py-2 text-sm focus:border-slate-900 focus:outline-none"
+  >
+    {
+      speciesList.map((species) => (
+        <option value={species} selected={species === current}>
+          {species} ({speciesInfos[species].name})
+        </option>
+      ))
+    }
+  </select>
+</div>
+
+<script>
+  document.querySelector("#species")?.addEventListener("change", (evt) => {
+    const value = (evt.target as HTMLSelectElement).value;
+    // "/" final : Netlify sert /species/Adelie/index.html, sans "/" il fait une redirection
+    location.pathname = "/species/" + value + "/";
+  });
+</script>

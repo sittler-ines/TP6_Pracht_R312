@@ -1,0 +1,19 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import SpeciesMenu from "../../components/SpeciesMenu.astro";
+import GraphicSpecies from "../../components/GraphicSpecies.astro";
+import { speciesInfos } from "../../lib/penguins.js";
+
+const species = "Gentoo";
+---
+
+<Layout title={species} description={speciesInfos[species].text}>
+  <header class="mb-6">
+    <p class="m-0 text-sm uppercase tracking-wide text-slate-500">Une page par espece</p>
+    <h1 class="mb-0 mt-1 text-3xl font-bold">Mesures du bec des {species}</h1>
+  </header>
+
+  <SpeciesMenu current={species} />
+
+  <GraphicSpecies species={species} />
+</Layout>

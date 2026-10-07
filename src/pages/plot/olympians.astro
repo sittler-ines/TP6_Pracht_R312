@@ -1,0 +1,94 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import olympians from "../../assets/olympians.json";
+
+const sportsList = [...new Set(olympians.map((d) => d.sport))].sort();
+
+const selectClass =
+  "border border-slate-300 bg-white px-3 py-2 text-sm focus:border-slate-900 focus:outline-none";
+---
+
+<Layout
+  title="Athletes olympiques"
+  description="Taille et poids des athletes des JO de Rio 2016, filtres par sport et sexe cote client."
+>
+  <h1 class="mb-2 mt-0 text-3xl font-bold">Athletes olympiques : taille et poids</h1>
+  <p class="mb-6 mt-0 text-slate-600">
+    Jeu de donnees "olympians" des sample datasets Observable : les athletes des JO de Rio 2016.
+  </p>
+
+  <form id="filters" class="mb-6 flex flex-wrap items-center gap-x-6 gap-y-3">
+    <div class="flex items-center gap-2">
+      <label for="sport" class="text-sm font-semibold">Sport :</label>
+      <select name="sport" id="sport" class={selectClass}>
+        <option value="">Tous les sports</option>
+        {sportsList.map((sport) => <option value={sport}>{sport}</option>)}
+      </select>
+    </div>
+    <div class="flex items-center gap-2">
+      <label for="sex" class="text-sm font-semibold">Sexe :</label>
+      <select name="sex" id="sex" class={selectClass}>
+        <option value="">Tous</option>
+        <option value="female">Femmes</option>
+        <option value="male">Hommes</option>
+      </select>
+    </div>
+  </form>
+
+  <p id="count" class="mb-4 mt-0 text-sm text-slate-600" aria-live="polite"></p>
+  <div id="myplot"></div>
+</Layout>
+
+<script>
+  import * as Plot from "@observablehq/plot";
+  import olympians from "../../assets/olympians.json";
+
+  const selectSport = document.querySelector("#sport") as HTMLSelectElement;
+  const selectSex = document.querySelector("#sex") as HTMLSelectElement;
+
+  function renderPlot() {
+    const sport = selectSport.value;
+    const sex = selectSex.value;
+
+    // On ne garde que les athletes dont la taille et le poids sont connus
+    const data = olympians.filter(
+      (d) =>
+        d.height != null &&
+        d.weight != null &&
+        (sport === "" || d.sport === sport) &&
+        (sex === "" || d.sex === sex),
+    );
+
+    const count = document.querySelector("#count") as HTMLParagraphElement;
+    count.innerText = `${data.length} athlete(s) correspondant aux filtres.`;
+
+    const div = document.querySelector("#myplot") as HTMLDivElement;
+    div.innerHTML = "";
+    if (data.length === 0) {
+      div.innerText = "Aucun athlete ne correspond a ces filtres.";
+      return;
+    }
+
+    const plot = Plot.plot({
+      grid: true,
+      x: { label: "Poids (kg)", domain: [30, 170] },
+      y: { label: "Taille (m)", domain: [1.2, 2.25] },
+      color: { legend: true, domain: ["female", "male"], range: ["#e15759", "#4e79a7"], label: "Sexe" },
+      marks: [
+        Plot.dot(data, {
+          x: "weight",
+          y: "height",
+          stroke: "sex",
+          r: 2,
+          strokeOpacity: 0.5,
+          tip: true,
+          channels: { Nom: "name", Pays: "nationality", Sport: "sport" },
+        }),
+      ],
+    });
+    div.append(plot);
+  }
+
+  document.querySelector("#filters")?.addEventListener("change", renderPlot);
+  renderPlot();
+</script>
